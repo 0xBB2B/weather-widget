@@ -5,4 +5,4 @@ A Weather widget on iOS14
 Charts used <https://github.com/swift-extensions/swiftui-charts>
 
 ## API
-You can get api key from <https://openweathermap.org/forecast5#limit>
+You can get api key from <https://openweathermap.org/forecast5#geo5>
