@@ -3,6 +3,8 @@ import SwiftUI
 import Intents
 import Charts
 
+let tokyoLocation = CLLocationCoordinate2D(latitude: 35.41, longitude: 139.42)
+
 struct Weather: Codable {
     var cod: String?
     var message: Int?
@@ -43,9 +45,9 @@ struct ChartData {
     var temp: [Double] = []
 }
 
-func getWeather(from locality: String) -> Weather {
+func getWeather(from location: CLLocationCoordinate2D) -> Weather {
     var weather = Weather()
-    let url = URL(string: "https://api.openweathermap.org/data/2.5/forecast?appid={APPID}&units=metric&q=\(locality)&lang=zh_cn")!
+    let url = URL(string: "https://api.openweathermap.org/data/2.5/forecast?appid={API_KEY}&units=metric&lat=\(location.latitude)&lon=\(location.longitude)&lang=zh_cn")!
     let request = URLRequest(url: url)
     let semaphore = DispatchSemaphore(value: 0)
     let task = URLSession.shared.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
@@ -73,9 +75,9 @@ func getWeather(from locality: String) -> Weather {
     return weather
 }
 
-func getChartData(from locality: String = "tokyo") -> ChartData {
+func getChartData(from location: CLLocationCoordinate2D) -> ChartData {
     var chartData = ChartData()
-    let weather = getWeather(from: locality)
+    let weather = getWeather(from: location)
     if weather.list != nil {
         chartData.city = weather.city!.name
         for i in 0..<8{
@@ -97,11 +99,11 @@ func getChartData(from locality: String = "tokyo") -> ChartData {
 
 struct Provider: IntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), chartData: getChartData())
+        SimpleEntry(date: Date(), chartData: getChartData(from: tokyoLocation))
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), chartData: getChartData(from: configuration.locality!))
+        let entry = SimpleEntry(date: Date(), chartData: getChartData(from: configuration.location!.location!.coordinate))
         completion(entry)
     }
 
@@ -112,7 +114,7 @@ struct Provider: IntentTimelineProvider {
         let currentDate = Date()
         for hourOffset in 0 ..< 1 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, chartData: getChartData(from: configuration.locality!))
+            let entry = SimpleEntry(date: entryDate, chartData: getChartData(from: configuration.location!.location!.coordinate))
             entries.append(entry)
         }
 
@@ -188,7 +190,7 @@ struct Trend: Widget {
 
 struct Trend_Previews: PreviewProvider {
     static var previews: some View {
-        TrendEntryView(entry: SimpleEntry(date: Date(), chartData: getChartData()))
+        TrendEntryView(entry: SimpleEntry(date: Date(), chartData: getChartData(from: tokyoLocation)))
             .previewContext(WidgetPreviewContext(family: .systemMedium))
     }
 }
