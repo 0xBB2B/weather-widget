@@ -1,5 +1,6 @@
 # The weather widget
 A Weather widget on iOS14
+![002](https://github.com/0xBB2b/the-weather-widget/blob/master/002.png)
 
 ## Charts
 Charts used <https://github.com/swift-extensions/swiftui-charts>
